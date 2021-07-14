@@ -10,7 +10,7 @@ if(!require(dplyr)) install.packages('dplyr'); library(dplyr)
 
 conn = dbConnect(dbDriver('MySQL'), 
                  host = '127.0.0.1', dbname = 'pyctd', port = 3306,
-                 user = 'root', password = 'nrz5oloF71')
+                 user = 'root', password = '')
 ```
 
 
