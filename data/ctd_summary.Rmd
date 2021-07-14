@@ -1,0 +1,129 @@
+---
+output: html_document
+---
+```{r include = FALSE}
+rm(list = ls())
+gc(reset = T)
+
+if(!require(RMySQL)) install.packages('RMySQL'); library(RMySQL)
+if(!require(dplyr)) install.packages('dplyr'); library(dplyr)
+
+conn = dbConnect(dbDriver('MySQL'), 
+                 host = '127.0.0.1', dbname = 'pyctd', port = 3306,
+                 user = 'root', password = 'nrz5oloF71')
+```
+
+
+### All Chemicals
+```{r }
+chems = dbGetQuery(conn, 'select * from allchems')
+dim(chems); str(chems)
+
+(chem_len = apply(chems, 2, function(x) length(unique(x))))
+(chem_na_len = apply(chems, 2, function(x) sum(is.na(x))))
+chem_len + chem_na_len
+
+head(chems$Definition[complete.cases(chems$Definition)])
+```
+- ChemicalName & ChemicalID 일대일대응이 되는지 
+- CasRN: CAS 등록 번호는 이제까지 알려진 모든 화합물, 중합체 등을 기록하는 번호
+- parentid
+- treenumbers (identifiers of the chemical's nodes)
+- parentTreeNumbers
+- synonyms는 chemicalname의 동의어? -> 구분자 '|'가 '또는'을 의미 ?
+
+
+\newpage
+### All Genes
+```{r }
+genes = dbGetQuery(conn, 'select * from allgenes')
+dim(genes); str(genes)
+
+(genes_len = apply(genes, 2, function(x) length(unique(x))))
+(genes_na_len = apply(genes, 2, function(x) sum(is.na(x))))
+genes_len + genes_na_len
+```
+
+
+\newpage
+### All Phenotypes
+```{r }
+pheno = dbGetQuery(conn, 'select * from allphenotypes')
+dim(pheno); str(pheno)
+
+(pheno_len = apply(pheno, 2, function(x) length(unique(pheno))))
+(pheno_na_len = apply(pheno, 2, function(x) sum(is.na(pheno))))
+pheno_len + pheno_na_len
+```
+
+
+\newpage
+### All Disease
+```{r }
+dis = dbGetQuery(conn, 'select * from alldiseases')
+dim(dis); str(dis)
+
+(dis_len = apply(dis, 2, function(x) length(unique(x))))
+(dis_na_len = apply(dis, 2, function(x) sum(is.na(x))))
+dis_len + dis_na_len
+
+slim_map = strsplit(dis$SlimMappings, '\\|')
+d = slim_map %>% unlist()
+table(d)[which.max(table(d))]; table(d)[which.min(table(d))]
+```
+- DiseaseName과 DiseaseID 일대일대응이 되는지
+- SlimMappings: 구분자 '|'를 사용해서 상위 -> 하위 관계를 나타내는지
+
+
+\newpage
+### Chemical-Disease
+```{r }
+cd = dbGetQuery(conn, 'select * from cd')
+dim(cd); str(cd)
+
+(cd_len = apply(cd, 2, function(x) length(unique(x))))
+(cd_na_len = apply(cd, 2, function(x) sum(is.na(x))))
+cd_len + cd_na_len
+
+summary(cd$InferenceScore)
+```
+- PubmedID가 DiseaseID에 대한 논문 번호를 나타내는지
+- DirectEvidence
+
+
+\newpage
+### Chemical-Gene 
+```{r }
+cg = dbGetQuery(conn, 'select * from cg')
+dim(cg); str(cg)
+
+(cg_len = apply(cg, 2, function(x) length(unique(x))))
+(cg_na_len = apply(cg, 2, function(x) sum(is.na(x))))
+cg_len + cg_na_len
+
+table(cg$GeneForms)
+# unique(cg[, which.min(cg_len)])
+```
+
+
+\newpage
+### Gene-Disease
+```{r }
+t1 = Sys.time()
+gd = dbGetQuery(conn, 'select * from gd')
+Sys.time() - t1
+
+dim(gd); str(gd)
+```
+
+
+\newpage
+### Phenotype-Disease
+```{r }
+pd = dbGetQuery(conn, 'select * from phenotypediseases')
+dim(pd); str(pd)
+
+(pd_len = apply(pd, 2, function(x) length(unique(x))))
+(pd_na_len = apply(pd, 2, function(x) sum(is.na(x))))
+pd_len + pd_na_len
+```
