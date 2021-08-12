@@ -28,12 +28,12 @@ for i in tqdm(range(1, len(bit))):
     maccs_tmp = pd.DataFrame(list(bit[i])).transpose()
     maccs = pd.concat([maccs, maccs_tmp], ignore_index = True)
 
-macc_smiles = pd.DataFrame({'CasRN' : chems_with_smiles['CasRN'],
+macc_smiles = pd.DataFrame({'CasRN' : chems_with_smiles['CasRN'].drop(ms_na_idx, axis = 0).reset_index(drop = True),
                             'SMILES' : smiles.drop(ms_na_idx, axis = 0).reset_index(drop = True)})
 maccs_fingerprint = pd.concat([macc_smiles, maccs], axis = 1)
+maccs_fingerprint.isna().sum().sum()
 
-maccs_fingerprint.to_excel('maccs.xlsx', header = True, index = False)
-
+maccs_fingerprint.to_excel('maccs.xlsx', header = False, index = False)
 
 #%%
 # fp_tmp = [Chem.MolFromSmiles(x) for x in tqdm(smiles)]
@@ -51,9 +51,9 @@ for i in tqdm(range(1, len(fp_bit))):
     fps = pd.concat([fps, fps_tmp], ignore_index = True)
 
 
-fps_smiles = pd.DataFrame({'CasRN' : chems_with_smiles['CasRN'],
+fps_smiles = pd.DataFrame({'CasRN' : chems_with_smiles['CasRN'].drop(ms_na_idx, axis = 0).reset_index(drop = True),
                            'SMILES' : smiles.drop(ms_na_idx, axis = 0).reset_index(drop = True)})
-fps_fingerprint = pd.concat([macc_smiles, maccs], axis = 1)
+fps_fingerprint = pd.concat([fps_smiles, maccs], axis = 1)
+fps_fingerprint.isna().sum().sum()
 
-fps_fingerprint.to_excel('fps.xlsx', header = True, index = False)
-
+fps_fingerprint.to_excel('fps.xlsx', header = False, index = False)
