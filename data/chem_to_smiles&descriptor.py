@@ -17,7 +17,7 @@ from mordred import Calculator, descriptors
 # from sklearn.feature_extraction import DictVectorizer
 
 #%%
-mydb = pymysql.connect(host = '127.0.0.1', user = 'root', password = 'nrz5oloF71',
+mydb = pymysql.connect(host = '127.0.0.1', user = 'root', password = '',
                        charset = 'utf8mb4', cursorclass = pymysql.cursors.DictCursor, 
                        db = 'pyctd')
 conn = mydb.cursor()
