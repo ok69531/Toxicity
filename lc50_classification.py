@@ -15,7 +15,7 @@ from rdkit.Chem.EState import Fingerprinter
 from matplotlib import pyplot as plt
 
 from lightgbm import LGBMClassifier
-from xgboost import XGBClassifier
+# from xgboost import XGBClassifier
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVC
@@ -26,6 +26,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import plot_precision_recall_curve, roc_curve, auc, confusion_matrix, accuracy_score
 from sklearn.metrics import classification_report, cohen_kappa_score, plot_confusion_matrix
 
+import scipy.stats as stats
 
 pd.set_option('mode.chained_assignment', None)
 warnings.filterwarnings("ignore")
@@ -70,6 +71,7 @@ didnt_work_idx = data[data['SMILES'] == 'Did not work'].index
 data = data.drop(list(casrn_na_idx) + list(didnt_work_idx)).reset_index(drop = True)
 
 
+
 #%%
 # ppm data
 lc50_ppm_tmp = data[data['unit'] == 'ppm']
@@ -83,6 +85,8 @@ lc50_mgl_tmp['value'] = [lc50_mgl_tmp['lower_value'][i] if lc50_mgl_tmp['unit'][
                          lc50_mgl_tmp['lower_value'][i]*0.001 for i in lc50_mgl_tmp.index]
 lc50_mgl = lc50_mgl_tmp.groupby(['CasRN', 'SMILES'])['value'].mean().reset_index()
 lc50_mgl['value'].describe()
+
+
 
 
 #%%
@@ -134,6 +138,8 @@ mgl_fing_col_idx = mgl_fing_uniq[mgl_fing_uniq == 1].index
 mgl_fingerprint.drop(mgl_fing_col_idx, axis = 1, inplace = True)
 
 
+
+
 #%%
 from mordred import Calculator, descriptors, ABCIndex, AcidBase, Weight, ZagrebIndex, WienerIndex
 from sklearn.preprocessing import MinMaxScaler
@@ -168,9 +174,11 @@ ppm_scaled_descriptor.columns = ppm_descriptor.columns
 
 ppm_x = pd.concat([ppm_fingerprint, round(ppm_scaled_descriptor, 5)], axis = 1)
 ppm_y = pd.DataFrame({'value': lc50_ppm['value'],
-                     'category': pd.cut(lc50_ppm['value'], bins = [0, 100, 500, 2500, 20000, np.infty], labels = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5'])})
+                     'category': pd.cut(lc50_ppm['value'], bins = [0, 100, 500, 2500, 20000, np.infty], labels = ['1', '2', '3', '4', '5'])})
 ppm_y['category'].value_counts()
 # LabelBinarizer().fit_transform(ppm_y['category'])
+
+
 
 
 #%%
@@ -206,11 +214,15 @@ round(mgl_scaled_descriptor, 5)
 mgl_x = pd.concat([mgl_fingerprint, round(mgl_scaled_descriptor, 5)], axis = 1)
 mgl_y_tmp = lc50_mgl['value'].drop(ms_none_idx).reset_index(drop = True)
 mgl_y = pd.DataFrame({'value': mgl_y_tmp,
-                     'category': pd.cut(mgl_y_tmp, bins = [0, 0.5, 2.0, 10, 20, np.infty], labels = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5'])})
+                     'category': pd.cut(mgl_y_tmp, bins = [0, 0.5, 2.0, 10, 20, np.infty], labels = ['1', '2', '3', '4', '5'])})
 mgl_y['category'].value_counts()
 
 
+
+
+
 #%%
+random.seed(0)
 train_mgl_idx = random.sample(list(mgl_y.index), int(len(mgl_y) * 0.8))
 test_mgl_idx = list(set(mgl_y.index) - set(train_mgl_idx))
 
@@ -239,13 +251,15 @@ plt.title('GNB Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, gnb_pred))
-print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, gnb_pred))
+
+print('kendall tau: ', stats.kendalltau(test_mgl_y, gnb_pred),
+      '\n', classification_report(test_mgl_y, gnb_pred),
+      '\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, gnb_pred))
 
 
 
 #%%
-logistic = LogisticRegression(solver = 'lbfgs', multi_class = 'auto')
+logistic = LogisticRegression(random_state = 0, solver = 'lbfgs', multi_class = 'auto')
 logistic.fit(train_mgl_x, train_mgl_y)
 logistic_pred = logistic.predict(test_mgl_x)
 
@@ -254,12 +268,13 @@ plt.title('Logistic Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, logistic_pred))
+print('kendall tau: ', stats.kendalltau(test_mgl_y, logistic_pred),
+      '\n', classification_report(test_mgl_y, logistic_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, logistic_pred))
 
 
 #%%
-svc = SVC(C=50, kernel='rbf', gamma=1)     
+svc = SVC(random_state = 0)     
 svc.fit(train_mgl_x, train_mgl_y)
 svc_pred = svc.predict(test_mgl_x)
 
@@ -268,12 +283,13 @@ plt.title('SVM Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, svc_pred))
+print('kendall tau: ', stats.kendalltau(test_mgl_y, svc_pred),
+      '\n', classification_report(test_mgl_y, svc_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, svc_pred))
 
 
 #%%
-rf = RandomForestClassifier()
+rf = RandomForestClassifier(random_state = 0)
 rf.fit(train_mgl_x, train_mgl_y)
 rf_pred = rf.predict(test_mgl_x)
 
@@ -282,7 +298,8 @@ plt.title('RF Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, rf_pred))
+print('kendall tau: ', stats.kendalltau(test_mgl_y, rf_pred),
+      '\n', classification_report(test_mgl_y, rf_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, rf_pred))
 
 # print('training accuracy: ', rf.score(train_mgl_x, train_mgl_y))
@@ -291,7 +308,7 @@ print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, rf_pred))
 
 #%%
 from sklearn.neighbors import KNeighborsClassifier
-knn = KNeighborsClassifier(n_neighbors=3, algorithm='ball_tree')
+knn = KNeighborsClassifier(algorithm='ball_tree')
 knn.fit(train_mgl_x, train_mgl_y)
 knn_pred = knn.predict(test_mgl_x)
 
@@ -300,12 +317,13 @@ plt.title('KNN Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, knn_pred))
+print('kendall tau: ', stats.kendalltau(test_mgl_y, knn_pred),
+      '\n', classification_report(test_mgl_y, knn_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, knn_pred))
 
 
 #%%
-lgb = LGBMClassifier(n_estimators=1000)
+lgb = LGBMClassifier(random_state = 0)
 lgb.fit(train_mgl_x, train_mgl_y)
 lgb_pred = lgb.predict(test_mgl_x)
 
@@ -314,7 +332,8 @@ plt.title('LightGBM Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_mgl_y, lgb_pred))
+print('kendall tau: ', stats.kendalltau(test_mgl_y, lgb_pred),
+      '\n', classification_report(test_mgl_y, lgb_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, lgb_pred))
 
 
@@ -322,19 +341,19 @@ print('\nCohean Kappa Score: ', cohen_kappa_score(test_mgl_y, lgb_pred))
 train_mgl_x = tf.cast(train_mgl_x, tf.float32)
 test_mgl_x = tf.cast(test_mgl_x, tf.float32)
 
-nn_train_y = [0 if train_mgl_y[i] == 'cat1' 
-              else 1 if train_mgl_y[i] == 'cat2' 
-              else 2 if train_mgl_y[i] == 'cat3' 
-              else 3 if train_mgl_y[i] == 'cat4' 
+mgl_nn_train_y = [0 if train_mgl_y[i] == '1' 
+              else 1 if train_mgl_y[i] == '2' 
+              else 2 if train_mgl_y[i] == '3' 
+              else 3 if train_mgl_y[i] == '4' 
               else 4 for i in train_mgl_y.index]
-nn_train_y = tf.cast(nn_train_y, tf.int32)
+mlg_nn_train_y = tf.cast(mgl_nn_train_y, tf.int32)
 
-nn_test_y = [0 if test_mgl_y[i] == 'cat1' 
-             else 1 if test_mgl_y[i] == 'cat2' 
-             else 2 if test_mgl_y[i] == 'cat3' 
-             else 3 if test_mgl_y[i] == 'cat4' 
+mgl_nn_test_y = [0 if test_mgl_y[i] == '1' 
+             else 1 if test_mgl_y[i] == '2' 
+             else 2 if test_mgl_y[i] == '3' 
+             else 3 if test_mgl_y[i] == '4' 
              else 4 for i in test_mgl_y.index]
-nn_test_y = tf.cast(nn_test_y, tf.int32)
+mgl_nn_test_y = tf.cast(mgl_nn_test_y, tf.int32)
 
 
 #%%
@@ -357,17 +376,18 @@ scc = K.losses.SparseCategoricalCrossentropy()
 
 # model.compile(optimizer = adam, loss = bc, metrics = ['accuracy'])
 model.compile(optimizer = adam, loss = scc, metrics = ['accuracy'])
-result = model.fit(train_mgl_x, nn_train_y, epochs = 1000, batch_size = len(nn_train_y), verbose = 1)
+result = model.fit(train_mgl_x, mgl_nn_train_y, epochs = 1000, batch_size = len(mgl_nn_train_y), verbose = 1)
 # result = model.fit(x_train_smote, half_train_smote, epochs = 500, batch_size = len(half_train_smote), verbose = 1)
 
 
 #%%
-nn_pred_prob = model.predict(test_mgl_x)
-print(scc(nn_test_y, nn_pred_prob).numpy())
+mgl_nn_pred_prob = model.predict(test_mgl_x)
+print(scc(mgl_nn_test_y, mgl_nn_pred_prob).numpy())
 
-nn_pred = np.argmax(nn_pred_prob, axis = 1)
+mgl_nn_pred = np.argmax(mgl_nn_pred_prob, axis = 1)
 
-print('\n', classification_report(nn_test_y, nn_pred))
+print('kendall tau: ', stats.kendalltau(mgl_nn_test_y, mgl_nn_pred),
+      '\n', classification_report(mgl_nn_test_y, mgl_nn_pred))
 
 
 #%%
@@ -384,13 +404,14 @@ plt.title('GNB Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, gnb_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, gnb_pred),
+      '\n', classification_report(test_ppm_y, gnb_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, gnb_pred))
 
 
 
 #%%
-logistic = LogisticRegression(solver = 'lbfgs', multi_class = 'auto')
+logistic = LogisticRegression(random_state = 0, solver = 'lbfgs', multi_class = 'auto')
 logistic.fit(train_ppm_x, train_ppm_y)
 logistic_pred = logistic.predict(test_ppm_x)
 
@@ -399,12 +420,13 @@ plt.title('Logistic Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, logistic_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, logistic_pred),
+      '\n', classification_report(test_ppm_y, logistic_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, logistic_pred))
 
 
 #%%
-svc = SVC(C=50, kernel='rbf', gamma=1)     
+svc = SVC(random_state = 0)     
 svc.fit(train_ppm_x, train_ppm_y)
 svc_pred = svc.predict(test_ppm_x)
 
@@ -413,12 +435,13 @@ plt.title('SVM Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, svc_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, svc_pred),
+      '\n', classification_report(test_ppm_y, svc_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, svc_pred))
 
 
 #%%
-rf = RandomForestClassifier()
+rf = RandomForestClassifier(random_state = 0)
 rf.fit(train_ppm_x, train_ppm_y)
 rf_pred = rf.predict(test_ppm_x)
 
@@ -427,7 +450,8 @@ plt.title('RF Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, rf_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, rf_pred),
+      '\n', classification_report(test_ppm_y, rf_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, rf_pred))
 
 # print('training accuracy: ', rf.score(train_mgl_x, train_mgl_y))
@@ -436,7 +460,7 @@ print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, rf_pred))
 
 #%%
 from sklearn.neighbors import KNeighborsClassifier
-knn = KNeighborsClassifier(n_neighbors=3, algorithm='ball_tree')
+knn = KNeighborsClassifier(algorithm='ball_tree')
 knn.fit(train_ppm_x, train_ppm_y)
 knn_pred = knn.predict(test_ppm_x)
 
@@ -445,12 +469,13 @@ plt.title('KNN Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, knn_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, knn_pred),
+      '\n', classification_report(test_ppm_y, knn_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, knn_pred))
 
 
 #%%
-lgb = LGBMClassifier(n_estimators=1000)
+lgb = LGBMClassifier(random_state = 0)
 lgb.fit(train_ppm_x, train_ppm_y)
 lgb_pred = lgb.predict(test_ppm_x)
 
@@ -459,31 +484,32 @@ plt.title('LightGBM Confusion Matrix')
 plt.show()
 plt.close()
 # print('\nAccuracy: ', accuracy_score(test_mgl_y, gnb_pred))
-print('\n', classification_report(test_ppm_y, lgb_pred))
+print('kendall tau: ', stats.kendalltau(test_ppm_y, lgb_pred),
+      '\n', classification_report(test_ppm_y, lgb_pred))
 print('\nCohean Kappa Score: ', cohen_kappa_score(test_ppm_y, lgb_pred))
 
 
 #%%
-train_mgl_x = tf.cast(train_mgl_x, tf.float32)
-test_mgl_x = tf.cast(test_mgl_x, tf.float32)
+train_ppm_x = tf.cast(train_ppm_x, tf.float32)
+test_ppm_x = tf.cast(test_ppm_x, tf.float32)
 
-nn_train_y = [0 if train_mgl_y[i] == 'cat1' 
-              else 1 if train_mgl_y[i] == 'cat2' 
-              else 2 if train_mgl_y[i] == 'cat3' 
-              else 3 if train_mgl_y[i] == 'cat4' 
-              else 4 for i in train_mgl_y.index]
-nn_train_y = tf.cast(nn_train_y, tf.int32)
+ppm_nn_train_y = [0 if train_ppm_y[i] == '1' 
+              else 1 if train_ppm_y[i] == '2' 
+              else 2 if train_ppm_y[i] == '3' 
+              else 3 if train_ppm_y[i] == '4' 
+              else 4 for i in train_ppm_y.index]
+ppm_nn_train_y = tf.cast(ppm_nn_train_y, tf.int32)
 
-nn_test_y = [0 if test_mgl_y[i] == 'cat1' 
-             else 1 if test_mgl_y[i] == 'cat2' 
-             else 2 if test_mgl_y[i] == 'cat3' 
-             else 3 if test_mgl_y[i] == 'cat4' 
-             else 4 for i in test_mgl_y.index]
-nn_test_y = tf.cast(nn_test_y, tf.int32)
+ppm_nn_test_y = [0 if test_ppm_y[i] == '1' 
+             else 1 if test_ppm_y[i] == '2' 
+             else 2 if test_ppm_y[i] == '3' 
+             else 3 if test_ppm_y[i] == '4' 
+             else 4 for i in test_ppm_y.index]
+ppm_nn_test_y = tf.cast(ppm_nn_test_y, tf.int32)
 
 
 #%%
-input1 = layers.Input((train_mgl_x.shape[1]))
+input1 = layers.Input((ppm_nn_train_y.shape[1]))
 
 dense1 = layers.Dense(100, activation = 'relu')
 dense2 = layers.Dense(50, activation = 'tanh')
@@ -502,16 +528,61 @@ scc = K.losses.SparseCategoricalCrossentropy()
 
 # model.compile(optimizer = adam, loss = bc, metrics = ['accuracy'])
 model.compile(optimizer = adam, loss = scc, metrics = ['accuracy'])
-result = model.fit(train_mgl_x, nn_train_y, epochs = 1000, batch_size = len(nn_train_y), verbose = 1)
+result = model.fit(train_ppm_x, ppm_nn_train_y, epochs = 500, batch_size = len(nn_train_y), verbose = 1)
 # result = model.fit(x_train_smote, half_train_smote, epochs = 500, batch_size = len(half_train_smote), verbose = 1)
 
 
 #%%
-nn_pred_prob = model.predict(test_mgl_x)
-print(scc(nn_test_y, nn_pred_prob).numpy())
+ppm_nn_pred_prob = model.predict(test_ppm_x)
+print(scc(ppm_nn_test_y, ppm_nn_pred_prob).numpy())
 
-nn_pred = np.argmax(nn_pred_prob, axis = 1)
+ppm_nn_pred = np.argmax(ppm_nn_pred_prob, axis = 1)
 
-print('\n', classification_report(nn_test_y, nn_pred))
+print('kendall tau: ', stats.kendalltau(ppm_nn_test_y, ppm_nn_pred),
+      '\n', classification_report(ppm_nn_test_y, ppm_nn_pred))
 
 
+
+
+
+
+
+
+#%%
+y = pd.concat([mgl_y, ppm_y], axis = 0).reset_index(drop = True)['value']
+
+from sklearn.cluster import KMeans
+k = range(1, 10)
+Sum_of_squared_distances = []
+
+for num_cluster in k:
+    kmeans = KMeans(n_clusters = num_cluster)
+    kmeans.fit(np.array(y['value']).reshape(-1, 1))
+    Sum_of_squared_distances.append(kmeans.inertia_)
+
+plt.plot(k,Sum_of_squared_distances)
+plt.xlabel('Values of K') 
+plt.ylabel('Sum of squared distances/Inertia') 
+plt.title('Elbow Method For Optimal k')
+plt.show()
+
+kmeans = KMeans(n_clusters = 2)
+kmeans.fit(np.array(y).reshape(-1, 1))
+kmeans.inertia_
+kmeans.labels_
+
+y_cluster = pd.concat([y, pd.DataFrame({'cluster':kmeans.labels_})], axis = 1)
+
+clu_idx = np.where(y['cluster'] == 0)
+len(np.where(y['cluster'] == 0)[0])
+len(np.where(y['cluster'] == 1)[0])
+len(np.where(y['cluster'] == 2)[0])
+len(np.where(y['cluster'] == 3)[0])
+
+plt.hist(y['value'])
+
+
+y_cluster.iloc[np.where(y_cluster['cluster'] == 0)[0]]
+y_cluster.iloc[np.where(y_cluster['cluster'] == 1)[0]]
+y_cluster.iloc[np.where(y_cluster['cluster'] == 2)[0]]
+y_cluster.iloc[np.where(y_cluster['cluster'] == 3)[0]]
