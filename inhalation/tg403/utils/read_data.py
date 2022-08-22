@@ -1,6 +1,6 @@
 import openpyxl
 import pandas as pd
-from smiles2fing import Smiles2Fing
+from .smiles2fing import Smiles2Fing
 
 
 def load_data(inhale_type):
@@ -11,6 +11,7 @@ def load_data(inhale_type):
     x = pd.concat([df.time.drop(drop_idx).reset_index(drop = True),
                    fingerprints],
                   axis = 1)
+    x.time[x.time.isna()] = 4
     y = df.category.drop(drop_idx)
     
     return x, y
