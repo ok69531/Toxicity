@@ -87,14 +87,14 @@ def CV(x, y, model, params, seed):
         val_f1_.append(f1_score(val_y, val_pred, average = 'macro'))
         val_accuracy_.append(accuracy_score(val_y, val_pred))
         
-    result = dict(zip(list(params.keys()) + train_metrics + val_metrics, 
-                      list(params.values()) + [np.mean(train_precision_), 
-                                               np.mean(train_recall_), 
-                                               np.mean(train_f1_), 
-                                               np.mean(train_accuracy_), 
-                                               np.mean(val_precision_), 
-                                               np.mean(val_recall_), 
-                                               np.mean(val_f1_), 
-                                               np.mean(val_accuracy_)]))
+    result = dict(zip(['params'] + train_metrics + val_metrics, 
+                      [params] + [np.mean(train_precision_), 
+                                  np.mean(train_recall_), 
+                                  np.mean(train_f1_), 
+                                  np.mean(train_accuracy_), 
+                                  np.mean(val_precision_), 
+                                  np.mean(val_recall_), 
+                                  np.mean(val_f1_), 
+                                  np.mean(val_accuracy_)]))
     
     return(result)
