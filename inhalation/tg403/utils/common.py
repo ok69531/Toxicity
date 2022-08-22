@@ -49,7 +49,7 @@ def ParameterGrid(param_dict):
     return params_grid
 
 
-def CV(x, y, model, params):
+def CV(x, y, model, params, seed):
     skf = StratifiedKFold(n_splits = 5)
     
     metrics = ['precision', 'recall', 'f1', 'accuracy']
@@ -71,7 +71,7 @@ def CV(x, y, model, params):
         train_x, train_y = x.iloc[train_idx], y.iloc[train_idx]
         val_x, val_y = x.iloc[val_idx], y.iloc[val_idx]
         
-        clf = model(**params)
+        clf = model(random_state = seed, **params)
         clf.fit(train_x, train_y)
         
         train_pred = clf.predict(train_x)
