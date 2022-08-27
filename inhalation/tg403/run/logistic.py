@@ -16,13 +16,6 @@ from utils.common import (
 )
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import (
-    precision_score,
-    recall_score,
-    accuracy_score,
-    f1_score
-)
 
 warnings.filterwarnings('ignore')
 
@@ -62,10 +55,10 @@ def main():
         result['accuracy']['model'+str(p)] = []
         
         for seed_ in range(10):
-            x_train, y_train, x_test, y_test = data_split(x, y, seed = seed_)
+            # x_train, y_train, x_test, y_test = data_split(x, y, seed = seed_)
             
-            r_ = CV(x_train, 
-                    y_train, 
+            r_ = CV(x, 
+                    y, 
                     LogisticRegression, 
                     params[p], 
                     seed = seed_)
@@ -80,10 +73,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# with open('../results/vapour_logistic.json', 'r') as file:
-#     df = json.load(file)
-
-# df['model']
-# [np.mean(df['precision'][i]) for i in df['precision'].keys()]
