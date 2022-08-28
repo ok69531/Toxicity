@@ -71,7 +71,11 @@ def CV(x, y, model, params, seed):
         train_x, train_y = x.iloc[train_idx], y.iloc[train_idx]
         val_x, val_y = x.iloc[val_idx], y.iloc[val_idx]
         
-        clf = model(random_state = seed, **params)
+        try:
+            clf = model(random_state = seed, **params)
+        except:
+            clf = model(**params)
+        
         clf.fit(train_x, train_y)
         
         train_pred = clf.predict(train_x)
