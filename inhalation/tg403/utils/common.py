@@ -1,4 +1,6 @@
+import sklearn
 import numpy as np
+import pandas as pd
 
 from tqdm import tqdm
 
@@ -76,10 +78,21 @@ def CV(x, y, model, params, seed):
         except:
             clf = model(**params)
         
-        clf.fit(train_x, train_y)
+        # clf.fit(train_x, train_y)
         
-        train_pred = clf.predict(train_x)
-        val_pred = clf.predict(val_x)
+        if model == sklearn.cross_decomposition._pls.PLSRegression:
+            onehot_train_y = pd.get_dummies(train_y)
+            
+            clf.fit(train_x, onehot_train_y)
+            
+            train_pred = np.argmax(clf.predict(train_x), axis = 1)
+            val_pred = np.argmax(clf.predict(val_x), axis = 1)
+            
+        else:
+            clf.fit(train_x, train_y)
+            
+            train_pred = clf.predict(train_x)
+            val_pred = clf.predict(val_x)
         
         train_precision_.append(precision_score(train_y, train_pred, average = 'macro'))
         train_recall_.append(recall_score(train_y, train_pred, average = 'macro'))
