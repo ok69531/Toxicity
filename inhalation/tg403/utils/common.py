@@ -17,7 +17,7 @@ from sklearn.metrics import (
     accuracy_score,
     f1_score
 )
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.cross_decomposition import PLSRegression
 
 
 def data_split(X, y, seed):
