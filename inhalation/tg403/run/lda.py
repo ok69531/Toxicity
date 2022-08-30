@@ -71,7 +71,7 @@ def main():
             result['f1']['model'+str(p)].append(r_['val_f1'])
             result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
         
-    json.dump(result, open('../results/' + args.inhale_type + '_lda.json', 'w'))
+    json.dump(result, open('../results/cv_results/' + args.inhale_type + '_lda.json', 'w'))
 
 
 if __name__ == '__main__':
