@@ -17,6 +17,7 @@ from sklearn.metrics import (
     accuracy_score,
     f1_score
 )
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 
 def data_split(X, y, seed):
