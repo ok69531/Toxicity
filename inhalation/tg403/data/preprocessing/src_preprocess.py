@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 
 
 #%%
-# smiles_df = pd.read_excel('../tg403_raw_BSY.xlsx') -> inhalation repository 
 with open('tg403_page_src.json', 'r') as file:
     df = pd.DataFrame(json.load(file))
 
@@ -89,11 +88,6 @@ for i in tqdm(range(len(df))):
 # %%
 result = pd.DataFrame(result_)
 
-df = pd.concat([result, smiles_df[['CasRN', 'Final_SMILES']]], join = 'inner', axis = 1)
-df = df.loc[:, ~df.columns.duplicated()]
-df = df.rename(columns = {'Final_SMILES': 'SMILES'})
-
-
 #%%
 '''
     1. nan이 아닌 경우
@@ -107,7 +101,7 @@ df = df.rename(columns = {'Final_SMILES': 'SMILES'})
     aerosol 없이 gas 포함되면 gas
     
     2. nan인경우 많은 쪽으로 포함
-    3. inhalation만 있는 경우 (이거는 ':' 표시가 없는걸로 찾으면 될듯) 많은 쪽으로 포함
+    3. inhalation만 있는 경우 많은 쪽으로 포함
     4. aerosol, vapour, gas, dust, mist가 포함되어있지 않으면 많은 쪽으로 포함
 '''
 
@@ -161,6 +155,8 @@ def inhale_type(string):
 
 
 #%%
+df = result.copy()
+
 # generate inhale type
 df['inhale type'] = df['Route of administration'].map(lambda x: inhale_type(x))
 
