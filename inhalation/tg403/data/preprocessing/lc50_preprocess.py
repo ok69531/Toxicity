@@ -191,25 +191,5 @@ for i in range_idx:
         
 
 #%%
-# SMILES = 0 인 value 변환
-from urllib.request import urlopen
-from urllib.parse import quote 
-
-def CIRconvert(ids):
-    try:
-        url = 'http://cactus.nci.nih.gov/chemical/structure/' + quote(ids) + '/smiles'
-        ans = urlopen(url).read().decode('utf8')
-        return ans
-    except:
-        return '-'
-
-# index of SMILES = 0 or SMILES = NaN
-smi_idx = list(val_df['SMILES'][val_df['SMILES'] == 0].index) + list(val_df[val_df.SMILES.isna()].index)
-
-smi_ =  [CIRconvert(i) for i in tqdm(val_df['CasRN'][smi_idx])]
-val_df['SMILES'][smi_idx] = smi_
-
-
-#%%
 val_df.drop(['Value_split'], axis = 1, inplace = True)
 val_df.to_excel('tg403_lc50.xlsx', header = True, index = False)
