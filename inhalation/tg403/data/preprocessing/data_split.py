@@ -91,13 +91,12 @@ lc50_vap.to_excel('../vapour.xlsx', header = True, index = False)
 # vapour data
 lc50_aer_tmp = data[data['inhale type'] == 'aerosol']
 lc50_aer_tmp['value'] = list(map(unify, lc50_aer_tmp.unit, lc50_aer_tmp.lower_value))
-lc50_aer = lc50_vap_tmp.groupby(['CasRN'])['time', 'value'].mean().reset_index()
+lc50_aer = lc50_aer_tmp.groupby(['CasRN'])['time', 'value'].mean().reset_index()
 # lc50_aer = lc50_vap_tmp.groupby(['CasRN', 'SMILES'])['time', 'value'].mean().reset_index()
 
 lc50_aer['SMILES'] = lc50_aer.CasRN.progress_apply(lambda x: cirpy.resolve(x, 'smiles'))
 lc50_aer.SMILES.isna().sum()
 lc50_aer = lc50_aer[lc50_aer['SMILES'].notna()].reset_index(drop = True)
-
 
 lc50_aer['category'] = pd.cut(lc50_aer.value, bins =[0, 0.05, 0.5, 1.0, 5.0, np.infty], labels = range(5))
 
