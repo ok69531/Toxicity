@@ -15,7 +15,14 @@ from utils.common import (
     CV
 )
 
-from lightgbm import LGBMClassifier
+try:
+    from lightgbm import LGBMClassifier
+except: 
+    import sys
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "lightgbm"])
+    from lightgbm import LGBMClassifier
+
 
 warnings.filterwarnings('ignore')
 

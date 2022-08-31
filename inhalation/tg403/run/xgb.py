@@ -18,7 +18,15 @@ from utils.common import (
     CV
 )
 
-from xgboost import XGBClassifier
+try:
+    from xgboost import XGBClassifier
+except: 
+    import sys
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "xgboost"])
+    from xgboost import XGBClassifier
+
+
 
 warnings.filterwarnings('ignore')
 
