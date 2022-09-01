@@ -3,7 +3,6 @@ sys.path.append('../')
 
 import json
 import pickle
-import sklearn
 import itertools
 
 import numpy as np
@@ -13,13 +12,21 @@ from tqdm import tqdm
 from scipy.stats import sem
 from utils.read_data import load_data
 
+import sklearn
+from sklearn.cross_decomposition import PLSRegression
+
+from rdkit import RDLogger
+
+pd.set_option('mode.chained_assignment', None)
+RDLogger.DisableLog('rdApp.*')
+
 
 def mean(values):
     return np.mean(values).round(3)
 
 
 def se(values):
-    return sem(values).round(3)
+    return sem(values).round(5)
 
 
 def metric_mean(data, metric: str):
@@ -41,8 +48,8 @@ def print_result(inhale_type: str, model: str):
                               'precision_se': metric_se(d, 'precision'),
                               'recall_mean': metric_mean(d, 'recall'),
                               'recall_se': metric_se(d, 'recall'),
-                              'accurcay_mean': metric_mean(d, 'accuracy'),
-                              'accurcay_se': metric_se(d, 'accuracy'),
+                              'accuracy_mean': metric_mean(d, 'accuracy'),
+                              'accuracy_se': metric_se(d, 'accuracy'),
                               'f1_mean': metric_mean(d, 'f1'),
                               'f1_se': metric_se(d, 'f1')
                 })
@@ -121,9 +128,13 @@ if __name__ == '__main__':
     comb = list(itertools.product(inhale, models))
     
     for x in tqdm(comb):
-        model_save(x[0], x[1], 'f1')
+        try:
+            model_save(x[0], x[1], 'f1')
+        except FileNotFoundError:
+            print(x[0] + '_' + x[1] + '.json file is empty !')
 
 
 # if __name__ == '__main__':
-#     df_ = print_result('vapour', 'mlp')
+#     df_ = print_result('vapour', 'lgb')
 #     print(print_metrics(df_, 'f1'))
+#     # print(print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
