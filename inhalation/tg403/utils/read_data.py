@@ -8,10 +8,6 @@ def load_data(inhale_type):
     
     drop_idx, fingerprints = Smiles2Fing(df.SMILES)
     
-    x = pd.concat([df.time.drop(drop_idx).reset_index(drop = True),
-                   fingerprints],
-                  axis = 1)
-    x.time[x.time.isna()] = 4
     y = df.category.drop(drop_idx)
     
-    return x, y
+    return fingerprints, y
