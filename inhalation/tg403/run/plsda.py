@@ -5,16 +5,21 @@ import json
 import warnings
 import argparse
 import numpy as np
+import pandas as pd
 
 from tqdm import tqdm
 
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    accuracy_score,
+    f1_score
+)
+
 from utils.read_data import load_data
 from utils.smiles2fing import Smiles2Fing
-from utils.common import (
-    data_split,
-    ParameterGrid,
-    CV
-)
+from utils.common import ParameterGrid
 
 from sklearn.cross_decomposition import PLSRegression
 
@@ -55,18 +60,33 @@ def main():
         result['accuracy']['model'+str(p)] = []
         
         for seed_ in range(10):
-            # x_train, y_train, x_test, y_test = data_split(x, y, seed = seed_)
-         
-            r_ = CV(x, 
-                    y, 
-                    PLSRegression, 
-                    params[p], 
-                    seed = seed_)
+            x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
+            y_train = pd.get_dummies(y_train)
             
-            result['precision']['model'+str(p)].append(r_['val_precision'])
-            result['recall']['model'+str(p)].append(r_['val_recall'])
-            result['f1']['model'+str(p)].append(r_['val_f1'])
-            result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
+            try:
+                model = PLSRegression(random_state = seed_, **params[p])
+            except: 
+                model = PLSRegression(**params[p])
+                
+            model.fit(x_train, y_train)
+            pred = np.argmax(model.predict(x_test), axis = 1)
+            
+            result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
+            result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
+            result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
+            result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+            
+         
+            # r_ = CV(x, 
+            #         y, 
+            #         PLSRegression, 
+            #         params[p], 
+            #         seed = seed_)
+            
+            # result['precision']['model'+str(p)].append(r_['val_precision'])
+            # result['recall']['model'+str(p)].append(r_['val_recall'])
+            # result['f1']['model'+str(p)].append(r_['val_f1'])
+            # result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
         
     json.dump(result, open('../results/cv_results/' + args.inhale_type + '_plsda.json', 'w'))
 

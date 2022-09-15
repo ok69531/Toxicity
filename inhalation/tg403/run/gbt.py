@@ -7,13 +7,17 @@ import argparse
 
 from tqdm import tqdm
 
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    accuracy_score,
+    f1_score
+)
+
 from utils.read_data import load_data
 from utils.smiles2fing import Smiles2Fing
-from utils.common import (
-    data_split,
-    ParameterGrid,
-    CV
-)
+from utils.common import ParameterGrid
 
 from sklearn.ensemble import GradientBoostingClassifier
 
@@ -55,18 +59,31 @@ def main():
         result['accuracy']['model'+str(p)] = []
         
         for seed_ in range(10):
-            # x_train, y_train, x_test, y_test = data_split(x, y, seed = seed_)
+            x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
             
-            r_ = CV(x, 
-                    y, 
-                    GradientBoostingClassifier, 
-                    params[p], 
-                    seed = seed_)
+            try:
+                model = GradientBoostingClassifier(random_state = seed_, **params[p])
+            except: 
+                model = GradientBoostingClassifier(**params[p])
+                
+            model.fit(x_train, y_train)
+            pred = model.predict(x_test)
             
-            result['precision']['model'+str(p)].append(r_['val_precision'])
-            result['recall']['model'+str(p)].append(r_['val_recall'])
-            result['f1']['model'+str(p)].append(r_['val_f1'])
-            result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
+            result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
+            result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
+            result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
+            result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+            
+            # r_ = CV(x, 
+            #         y, 
+            #         GradientBoostingClassifier, 
+            #         params[p], 
+            #         seed = seed_)
+            
+            # result['precision']['model'+str(p)].append(r_['val_precision'])
+            # result['recall']['model'+str(p)].append(r_['val_recall'])
+            # result['f1']['model'+str(p)].append(r_['val_f1'])
+            # result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
         
     json.dump(result, open('../results/cv_results/' + args.inhale_type + '_gbt.json', 'w'))
 
