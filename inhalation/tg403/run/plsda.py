@@ -37,7 +37,7 @@ def main():
     x, y = load_data(inhale_type = args.inhale_type)
 
     params_dict = {
-        'n_components': [2, 7, 50, 100, 168],
+        'n_components': [2, 7, 50, 100, 167],
         'max_iter': [300, 500, 1000],
         'tol': np.logspace(-7, -5, 10)
     }
