@@ -12,3 +12,4 @@ __pycache__/
 **/data/**/*.json
 SLURM*
 .sh
+**/pred_result
