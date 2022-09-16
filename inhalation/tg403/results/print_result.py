@@ -40,7 +40,7 @@ def metric_se(data, metric: str):
 
 
 def print_result(inhale_type: str, model: str):
-    with open('cv_results/' + inhale_type + '_' + model + '.json', 'r') as file:
+    with open('test_results/' + inhale_type + '_' + model + '.json', 'r') as file:
         d = json.load(file)
     
     result_df = pd.DataFrame({'params': d['model'].values(),
