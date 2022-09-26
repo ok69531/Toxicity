@@ -120,21 +120,30 @@ def model_save(inhale_type: str, model: str, metric: str):
         pickle.dump(clf, file)
 
 
-if __name__ == '__main__':
-    inhale = ['vapour', 'aerosol', 'gas']
-    metrics = ['precision', 'recall', 'accuracy', 'f1']
-    models = ['logistic', 'dt', 'rf', 'gbt', 'xgb', 'lgb', 'lda', 'qda', 'plsda', 'mlp']
+# if __name__ == '__main__':
+#     inhale = ['vapour', 'aerosol', 'gas']
+#     metrics = ['precision', 'recall', 'accuracy', 'f1']
+#     models = ['logistic', 'dt', 'rf', 'gbt', 'xgb', 'lgb', 'lda', 'qda', 'plsda', 'mlp']
     
-    comb = list(itertools.product(inhale, models))
+#     comb = list(itertools.product(inhale, models))
     
-    for x in tqdm(comb):
-        try:
-            model_save(x[0], x[1], 'f1')
-        except FileNotFoundError:
-            print(x[0] + '_' + x[1] + '.json file is empty !')
+#     for x in tqdm(comb):
+#         try:
+#             model_save(x[0], x[1], 'f1')
+#         except FileNotFoundError:
+#             print(x[0] + '_' + x[1] + '.json file is empty !')
 
 
 # if __name__ == '__main__':
-#     df_ = print_result('vapour', 'lgb')
-#     print(print_metrics(df_, 'f1'))
-#     # print(print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
+#     inhale = ['vapour', 'aerosol', 'gas']
+#     models = ['logistic', 'dt', 'rf', 'gbt', 'xgb', 'lgb', 'lda', 'qda', 'plsda', 'mlp']
+    
+#     comb = list(itertools.product(inhale, models))
+    
+#     for x in tqdm(comb):
+#         try:
+#             df_ = print_result(x[0], x[1])
+#             print('\n', x[0], x[1], 
+#                   '\n', print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
+#         except:
+#             print('\n', x[0], [1], 'result is empty')
