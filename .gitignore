@@ -13,3 +13,4 @@ __pycache__/
 SLURM*
 .sh
 **/pred_result
+**/pred_data.xlsx
