@@ -130,13 +130,13 @@ def model_save(model: str, metric: str):
 #             print(m + '.json file is empty !')
 
 
-if __name__ == '__main__':
-    models = ['logistic', 'dt', 'rf', 'gbt', 'xgb', 'lgb', 'lda', 'qda', 'plsda', 'mlp']
+# if __name__ == '__main__':
+#     models = ['logistic', 'dt', 'rf', 'gbt', 'xgb', 'lgb', 'lda', 'qda', 'plsda', 'mlp']
     
-    for m in tqdm(models):
-        try:
-            df_ = print_result(m)
-            print('\n', m, 
-                  '\n', print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
-        except:
-            print('\n', m, 'result is empty')
+#     for m in tqdm(models):
+#         try:
+#             df_ = print_result(m)
+#             print('\n', m, 
+#                   '\n', print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
+#         except:
+#             print('\n', m, 'result is empty')
