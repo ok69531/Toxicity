@@ -33,7 +33,7 @@ def main():
     x, y = load_data()
 
     params_dict = {
-        'n_components': [1, 2, 5, 10],
+        'n_components': [1, 2],
         'max_iter': [300, 500, 1000],
         'tol': np.logspace(-7, -5, 10)
     }
