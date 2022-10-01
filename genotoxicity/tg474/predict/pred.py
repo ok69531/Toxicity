@@ -15,7 +15,7 @@ from utils.smiles2fing import Smiles2Fing
 from sklearn.cross_decomposition import PLSRegression
 
 
-noael = pd.read_excel('../data/noael.xlsx')
+geno = pd.read_excel('../data/noael.xlsx')
 
 pred_df_tmp = pd.read_excel('pred_data.xlsx')
 
@@ -31,7 +31,7 @@ def check_cas_in_train(df):
     
     return num_, cas_in_train
 
-# n, v = check_cas_in_train(noael)
+# n, v = check_cas_in_train(geno)
 
 def data_check(df):
     n, v = check_cas_in_train(df)
@@ -42,7 +42,7 @@ def data_check(df):
     tmp.to_excel('check.xlsx', header = True, index = False)
     return n
 
-# data_check(noael)
+# data_check(geno)
     
 
 def prediction(model):
