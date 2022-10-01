@@ -33,7 +33,7 @@ def main():
     x, y = load_data()
 
     params_dict = {
-        'n_components': [2, 7, 50, 100, 167],
+        'n_components': [1, 2, 5, 10],
         'max_iter': [300, 500, 1000],
         'tol': np.logspace(-7, -5, 10)
     }
@@ -61,7 +61,7 @@ def main():
             sm = SMOTE(random_state = seed_)
             x_train, y_train = sm.fit_resample(x_train, y_train)
             
-            y_train = pd.get_dummies(y_train)
+            # y_train = pd.get_dummies(y_train)
             
             try:
                 model = PLSRegression(random_state = seed_, **params[p])
@@ -69,7 +69,7 @@ def main():
                 model = PLSRegression(**params[p])
                 
             model.fit(x_train, y_train)
-            pred = np.argmax(model.predict(x_test), axis = 1)
+            pred = [1 if x >= 0.5 else 0 for x in model.predict(x_test)[:, 0]]
             
             result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
             result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
