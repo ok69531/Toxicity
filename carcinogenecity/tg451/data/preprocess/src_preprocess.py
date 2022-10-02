@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 with open('tg451_page_src.json', 'r') as file:
     df = pd.DataFrame(json.load(file))
 
-df.link[0]
+
 #%%
 def remove_bracket(string):
     clean_string = re.sub('<.*?>', '', str(string))
