@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 with open('tg421_page_src.json', 'r') as file:
     df = pd.DataFrame(json.load(file))
 
-df.link[0]
+
 #%%
 def remove_bracket(string):
     clean_string = re.sub('<.*?>', '', str(string))
@@ -88,70 +88,5 @@ for i in tqdm(range(len(df))):
 # %%
 result = pd.DataFrame(result_)
 
-
-#%%
-'''
-    1. nan이 아닌 경우
-    aerosol -> 보수적인 쪽으로. Dusts and Mists로 넣으면 됨 (aerosol include mists, smokes, fumes, and dusts)
-    
-    vapour + aerosol 같이 여러개가 혼합된 경우 보수적인 카테고리로 포함
-    
-    aerosol, vapour, gas, dust가 포함되는 애들 찾고
-    aerosol이 포함되면 aerosol category
-    aerosol 없이 vapour or vapor or vaporization 포함되면 vapour
-    aerosol 없이 gas 포함되면 gas
-    
-    2. nan인경우 많은 쪽으로 포함
-    3. inhalation만 있는 경우 많은 쪽으로 포함
-    4. aerosol, vapour, gas, dust, mist가 포함되어있지 않으면 많은 쪽으로 포함
-'''
-
-def check_nan(string):
-    return string == string
-        
-
-def inhale_type(string):
-    if check_nan(string):
-        string = string.lower()
-        
-        if 'aerosol' in string:
-            type_ = 'aerosol'
-        
-        elif 'dust' in string:
-            type_ = 'aerosol'
-        
-        elif 'mist' in string:
-            type_ = 'aerosol'
-        
-        elif 'aerosol' not in string and 'gas' in string:
-            type_ = 'gas'
-        
-        elif 'aerosol' not in string and 'vapour' in string:
-            type_ = 'vapour'
-        
-        elif 'aerosol' not in string and 'vapor' in string:
-            type_ = 'vapour'
-        
-        elif 'aerosol' not in string and 'vaporization' in string:
-            type_ = 'vapour'
-        
-        else:
-            type_ = np.nan
-    
-    else:
-        type_ = np.nan
-        
-    return type_
-
-
-#%%
-df = result.copy()
-
-# generate inhale type
-df['inhale type'] = df['Route of administration'].map(lambda x: inhale_type(x))
-
-# if inhale type is nan then replace the value as maximal occurance of type
-df['inhale type'][df['inhale type'].isna()] = df['inhale type'].value_counts(sort=True).index[0]
-
 # save df
-df.to_excel('tg413_raw.xlsx', header = True, index = False)
+result.to_excel('tg421_raw.xlsx', header = True, index = False)
