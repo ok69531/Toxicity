@@ -8,6 +8,6 @@ def load_data(inhale_type):
     
     drop_idx, fingerprints = Smiles2Fing(df.SMILES)
     
-    y = df.category.drop(drop_idx)
+    y = df.category.drop(drop_idx).reset_index(drop = True)
     
     return fingerprints, y
