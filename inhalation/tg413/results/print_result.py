@@ -26,7 +26,7 @@ def mean(values):
 
 
 def se(values):
-    return sem(values).round(5)
+    return sem(values).round(3)
 
 
 def metric_mean(data, metric: str):
@@ -144,6 +144,7 @@ def model_save(inhale_type: str, model: str, metric: str):
 #         try:
 #             df_ = print_result(x[0], x[1])
 #             print('\n', x[0], x[1], 
-#                   '\n', print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
+#                   '\n', print_metrics(df_, 'f1'))
+#                 #   '\n', print_metrics(df_, 'f1')[['precision_mean', 'recall_mean', 'accuracy_mean', 'f1_mean']])
 #         except:
 #             print('\n', x[0], x[1], 'result is empty')
