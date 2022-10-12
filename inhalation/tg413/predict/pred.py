@@ -33,7 +33,7 @@ def check_cas_in_train(df):
     
     return num_, cas_in_train
 
-n, v = check_cas_in_train(vapour)
+# n, v = check_cas_in_train(vapour)
 
 def data_check(df):
     n, v = check_cas_in_train(df)
@@ -44,7 +44,7 @@ def data_check(df):
     tmp.to_excel('check.xlsx', header = True, index = False)
     return n
 
-data_check(gas)
+# data_check(gas)
     
 
 def prediction(inhale_type, model):
