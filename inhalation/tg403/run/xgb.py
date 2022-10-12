@@ -1,6 +1,5 @@
 import sys
 
-from lightgbm import early_stopping
 sys.path.append('../')
 
 import json
@@ -33,7 +32,6 @@ except:
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "xgboost"])
     from xgboost import XGBClassifier
-
 
 
 warnings.filterwarnings('ignore')
@@ -74,32 +72,34 @@ def main():
         result['f1']['model'+str(p)] = []
         result['accuracy']['model'+str(p)] = []
         
-        for seed_ in range(10):
-            x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
-            
+        seed_list = []
+        for seed_ in range(50):
             try:
-                model = XGBClassifier(random_state = seed_, **params[p])
-            except: 
-                model = XGBClassifier(**params[p])
+                x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
+
+                try:
+                    model = XGBClassifier(random_state = seed_, **params[p])
+                except: 
+                    model = XGBClassifier(**params[p])
+                    
+                model.fit(x_train, y_train)
+                pred = model.predict(x_test)
                 
-            model.fit(x_train, y_train)
-            pred = model.predict(x_test)
+                result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
+                result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
+                result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
+                result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+                
+                seed_list.append(seed_)
+                
+                if len(seed_list) == 10:
+                    break
             
-            result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
-            result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
-            result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
-            result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+            except:
+                pass
             
-            # r_ = CV(x, 
-            #         y, 
-            #         XGBClassifier, 
-            #         params[p], 
-            #         seed = seed_)
             
-            # result['precision']['model'+str(p)].append(r_['val_precision'])
-            # result['recall']['model'+str(p)].append(r_['val_recall'])
-            # result['f1']['model'+str(p)].append(r_['val_f1'])
-            # result['accuracy']['model'+str(p)].append(r_['val_accuracy'])
+                    
         
     json.dump(result, open('../results/test_results/' + args.inhale_type + '_xgb.json', 'w'))
 
