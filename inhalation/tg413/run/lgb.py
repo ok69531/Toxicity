@@ -69,7 +69,7 @@ def main():
         seed_list = []
         for seed_ in range(100):
             try:
-                x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
+                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, shuffle = True, random_state = seed_)
                 
                 try:
                     model = LGBMClassifier(random_state = seed_, **params[p])

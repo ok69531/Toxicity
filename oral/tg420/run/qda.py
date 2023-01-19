@@ -58,9 +58,7 @@ def main():
         result['accuracy']['model'+str(p)] = []
         
         for seed_ in [0, 4, 7, 8, 14, 15, 16, 17, 20, 22]:
-            x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle = True, random_state = seed_)
-            y_train.value_counts()
-            y_test.value_counts()
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, shuffle = True, random_state = seed_)
             
             try:
                 model = QuadraticDiscriminantAnalysis(random_state = seed_, **params[p])
