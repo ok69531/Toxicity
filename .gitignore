@@ -11,6 +11,6 @@ __pycache__/
 .DS_Store
 **/data/**/*.json
 SLURM*
-.sh
+*.sh
 **/pred_result
 **/pred_data.xlsx
