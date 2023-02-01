@@ -61,21 +61,28 @@ def main():
         result['f1']['model'+str(p)] = []
         result['accuracy']['model'+str(p)] = []
         
-        for seed_ in range(10):
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, shuffle = True, random_state = seed_)
-            
+        seed_list = []
+        for seed_ in range(100):
             try:
-                model = QuadraticDiscriminantAnalysis(random_state = seed_, **params[p])
-            except: 
-                model = QuadraticDiscriminantAnalysis(**params[p])
+                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, shuffle = True, random_state = seed_)
                 
-            model.fit(x_train, y_train)
-            pred = model.predict(x_test)
+                try:
+                    model = QuadraticDiscriminantAnalysis(random_state = seed_, **params[p])
+                except: 
+                    model = QuadraticDiscriminantAnalysis(**params[p])
+                    
+                model.fit(x_train, y_train)
+                pred = model.predict(x_test)
+                
+                result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
+                result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
+                result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
+                result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+                
+                seed_list.append(seed_)
+                if len(seed_list) == 10: break
             
-            result['precision']['model'+str(p)].append(precision_score(y_test, pred, average = 'macro'))
-            result['recall']['model'+str(p)].append(recall_score(y_test, pred, average = 'macro'))
-            result['f1']['model'+str(p)].append(f1_score(y_test, pred, average = 'macro'))
-            result['accuracy']['model'+str(p)].append(accuracy_score(y_test, pred))
+            except: pass
             
             # r_ = CV(x, 
             #         y, 
