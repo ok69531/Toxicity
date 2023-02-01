@@ -33,8 +33,7 @@ def main():
     params_dict = {
         'learning_rate': [0.001, 0.005, 0.01, 0.05, 0.1],
         'n_estimators': [5, 10, 50, 100, 130],
-        'max_depth': [1, 2, 3, 4],
-        
+        'max_depth': [1, 2, 3, 4]
     }
     params = ParameterGrid(params_dict)
 
