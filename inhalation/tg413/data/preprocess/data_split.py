@@ -78,7 +78,7 @@ noael_vap['SMILES'] = noael_vap.CasRN.progress_apply(lambda x: cirpy.resolve(x, 
 noael_vap.SMILES.isna().sum()
 noael_vap = noael_vap[noael_vap['SMILES'].notna()].reset_index(drop = True)
 
-noael_vap['category'] = pd.cut(noael_vap.value, bins =[0, 0.1, 1.0, np.infty], labels = range(3))
+noael_vap['category'] = pd.cut(noael_vap.value, bins =[0, 0.2, 1.0, np.infty], labels = range(3))
 noael_vap.to_excel('../vapour.xlsx', header = True, index = False)
 
 
